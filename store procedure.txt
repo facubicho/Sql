@@ -1,0 +1,87 @@
+ALTER procedure [dbo].[lista_proyecto] (@codigo smallint)
+as begin
+select i.nombre
+from pre_proyecto pp
+inner join proyecto p on p.cod_proyecto=pp.cod_proyecto
+inner join proyecto_investigador pq on p.cod_proyecto=pq.cod_proyecto
+inner join investigador i on i.legajo_inv=pq.legajo_inv
+where p.cod_proyecto=@codigo
+end
+
+-------------------------------
+
+ALTER procedure [dbo].[inserta_proyecto] (@descripcion varchar (30))
+as
+begin
+insert into pre_proyecto (cod_proyecto,titulo_proyecto,cod_estado)
+values ((select max(cod_proyecto)+1 from pre_proyecto),@descripcion,1)
+end
+
+------------------------------
+
+ALTER procedure [dbo].[estados_proyectos] (@numero smallint)
+as
+if @numero=1
+begin
+select *
+from pre_proyecto pp
+where  exists (select *
+	      from proyecto p 
+	      where p.cod_proyecto=pp.cod_proyecto)
+end
+
+if @numero=2
+begin
+select *
+from pre_proyecto pp
+where  not exists (select *
+		  from proyecto p 
+		  where p.cod_proyecto=pp.cod_proyecto)
+end
+
+if @numero=3
+begin
+select *
+from pre_proyecto pp
+end
+
+
+-----------------------------------
+ALTER procedure [dbo].[atrasado]
+as
+begin 
+
+select *
+from proyecto
+where fec_fin<=getdate()
+end
+
+-----------------------------------
+ALTER procedure [dbo].[elimina_proyecto]
+as
+begin
+delete pre_proyecto 
+where cod_proyecto not in (select cod_proyecto
+							from proyecto_investigador 
+							group by cod_proyecto)
+end
+
+--------------------------------------
+ALTER procedure [dbo].[control_insertar] (@proyecto smallint, @legajo smallint,@rol smallint)
+as
+declare @cuenta smallint
+set @cuenta =(select count(1) 
+from proyecto_investigador
+where cod_proyecto=@proyecto and legajo_inv=@legajo)
+
+if @cuenta=1
+begin
+select 'ya existe relacion'
+end
+
+if @cuenta=0
+begin
+insert into proyecto_investigador (cod_proyecto,legajo_inv,cod_rol)
+values (@proyecto , @legajo ,@rol )
+end
+

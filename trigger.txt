@@ -1,0 +1,67 @@
+	ALTER trigger [dbo].[cambio_banco]
+		on [dbo].[bancos]
+		after update 
+		as
+		begin
+		update recibo
+		set banco_id=(select id from inserted)
+		where banco_id=(select id from deleted)
+
+		--delete bancos
+		--where id=(select id from deleted)
+
+		--insert into bancos
+		--select * from inserted
+
+		end
+
+--------------------------------
+
+	ALTER trigger [dbo].[cambio_banco]
+		on [dbo].[bancos]
+		after update 
+		as
+		begin
+		update recibo
+		set banco_id=(select id from inserted)
+		where banco_id=(select id from deleted)
+
+		--delete bancos
+		--where id=(select id from deleted)
+
+		--insert into bancos
+		--select * from inserted
+
+		end
+
+--------------------------------
+
+ALTER trigger [dbo].[restriccion]
+on [dbo].[empleados]
+after insert
+as
+if (select puesto_id from inserted)=1
+begin
+
+insert into departamentos  (id,director_id)
+select 
+(select max(id)+1 from departamentos),legajo from inserted
+
+INSERT INTO empleados 
+select * from inserted
+end
+
+-----------------------------------
+
+ALTER trigger [dbo].[cambio_leg]
+on [dbo].[empleados]
+instead of insert
+as
+begin
+
+delete empleados
+where dni=(select dni from inserted)
+
+insert into empleados
+select * from inserted
+end

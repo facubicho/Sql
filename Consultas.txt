@@ -1,0 +1,98 @@
+
+select *
+from pre_proyecto pp
+inner join proyecto p on p.cod_proyecto=pp.cod_proyecto
+where p.fec_inicio=
+					(select min (fec_inicio)							
+					from proyecto )
+
+select *
+from proyecto 
+where  fec_inicio=(select min (fec_inicio)
+					from proyecto )
+
+
+------------------------------------------
+
+--subconsulta
+select count(1)
+from proyecto_investigador
+where cod_rol in (2,3,4)
+group by cod_proyecto
+
+
+select titulo_proyecto,i.nombre,
+					(select count(1)
+					from proyecto_investigador subpq						
+					where subpq.cod_rol in (2,3,4)
+					and subpq.cod_proyecto=pp.cod_proyecto)
+
+from pre_proyecto pp
+inner join proyecto_investigador pq on pq.cod_proyecto=pp.cod_proyecto
+inner join investigador i on i.legajo_inv=pq.legajo_inv
+where pq.cod_rol=1
+
+
+-------------------------------------------
+
+select i.nombre,min(subconsulta.total) as menos_empleados
+from
+(select subpq.cod_proyecto , count (1) total
+					from proyecto_investigador subpq
+					group by subpq.cod_proyecto
+					) as subconsulta
+
+inner join proyecto_investigador pq on subconsulta.cod_proyecto=pq.cod_proyecto
+inner join investigador i on i.legajo_inv=pq.legajo_inv
+where pq.cod_rol=1
+group by i.nombre						
+
+
+
+------------------------------------------
+
+SELECT top 1 cod_proyecto, count(1) as total_investigadores
+from proyecto_investigador		
+group by cod_proyecto    
+order by count(1) desc
+
+
+------------------------------------------
+
+select pp.cod_proyecto
+from pre_proyecto pp
+where not exists (select cod_proyecto
+				  from proyecto p
+				  where pp.cod_proyecto=p.cod_proyecto) 
+
+
+----------------------------------------
+
+select i.legajo_inv
+from investigador i
+where 
+not exists (select subpq.legajo_inv
+				from proyecto_investigador subpq
+				where i.legajo_inv=subpq.legajo_inv)
+union all
+select pq.legajo_inv
+from proyecto_investigador pq
+inner join proyecto p on p.cod_proyecto=pq.cod_proyecto
+where year(p.fec_inicio)<>2021
+
+
+------------------------------------------
+
+select *
+from proyecto
+where Datediff(day, fec_inicio, fec_fin) > ( select avg(datediff(day, fec_inicio, fec_fin)) from proyecto)
+
+
+
+select Datediff(MONTH, fec_inicio, fec_fin) ,cod_proyecto     -->diferencia dias
+from proyecto
+																
+
+select avg(datediff(day, fec_inicio, fec_fin)) from proyecto    --> promedio de diferencia de dias
+
+
